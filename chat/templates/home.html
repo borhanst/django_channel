@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>chat list</title>
+</head>
+<body>
+
+    {% for chat in users %}
+        <a href="{% url 'room' %}?id={{chat.id}}" >{{ chat.username }}</a><br>
+    {% endfor %}
+    
+    {% for chat in chats %}
+        {% if request.user ==  chat.customer%}
+            <a href="{% url 'room' chat.chat_id %}" >{{ chat.admin.username }}</a>
+        {% elif request.user == chat.admin%}
+            <a href="{% url 'room' chat.chat_id %}" >{{ chat.customer.username }}</a>
+        {% endif %}
+    {% endfor %}
+    <p> Group </p>
+    {% for chat in group_chats %}
+        <a href="{% url 'room' chat.chat_id %}" >{{ chat.chat_id }}</a>
+    {% endfor %}
+    <script>
+        const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+        function generateString(length) {
+            let result = ' ';
+            const charactersLength = characters.length;
+            for ( let i = 0; i < length; i++ ) {
+                result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            }
+            return result.trim();
+        }
+
+        const chatLink = document.getElementById('chat_link')
+        chatLink.setAttribute('href', `http://127.0.0.1:8000/room/${generateString(6)}/`)
+
+
+        
+    </script>
+</body>
+</html>
