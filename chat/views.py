@@ -1,43 +1,39 @@
 from django.shortcuts import render, redirect
-from chat.models import Chat
+from chat.models import Message
 from django.contrib.auth.models import User
-import uuid
-from django.contrib.auth import authenticate, login
 from django.db.models import Q
+from django.contrib.auth import authenticate, login
+
 # Create your views here.
 
 
 def home(request):
-    chats = Chat.objects.filter(Q(admin=request.user) | Q(customer=request.user))
-    # chats_id = chats.members.values_list('id', flat=True)
-    users = User.objects.exclude(id=request.user.id)
-    group_chats = Chat.objects.filter(members=request.user)
-    print(chats)
-    return render(request, "home.html", {"users": users, "chats": chats, "group_chats": group_chats})
+    message = Message.objects.filter(room='mnA32h').filter(~Q(sender=request.user)).values('sender__username')[:1]
+    print(message)
+    return render(request, "home.html")
 
 
 def room(request, room_id=None):
-    rev_id = request.GET.get('id')
-    chat_type = request.GET.get('type')
-    group_name = request.GET.get('name')
-    if room_id is None:
-        room_id = str(uuid.uuid4())[0:6]
-    chat, created = Chat.objects.get_or_create(chat_id=room_id)
+    # rev_id = request.GET.get('id')
+    # chat_type = request.GET.get('type')
+    # group_name = request.GET.get('name')
+    # if room_id is None:
+    #     room_id = str(uuid.uuid4())[0:6]
+    # chat, created = Chat.objects.get_or_create(chat_id=room_id)
 
-    if created and not chat_type:
-        chat.admin = request.user
-        chat.customer = User.objects.get(id=rev_id)
-        chat.save()
-    if chat_type:
-        chat_type.chat_type = chat_type
-        chat.members.add(request.user)
-        chat.group = group_name
-    print(chat)
-    return render(request, "room.html", {"room_name": chat.chat_id, "chat": chat})
+    # if created and not chat_type:
+    #     chat.admin = request.user
+    #     chat.customer = User.objects.get(id=rev_id)
+    #     chat.save()
+    # if chat_type:
+    #     chat_type.chat_type = chat_type
+    #     chat.members.add(request.user)
+    #     chat.group = group_name
+    # print(chat)
+    return render(request, "room.html")
 
 
 def login_view(request):
-    print(request.POST)
     if request.method == "POST":
         username = request.POST.get('username')
         password = request.POST.get('password')

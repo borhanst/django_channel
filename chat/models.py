@@ -1,17 +1,18 @@
+import uuid
 from django.db import models
 
 # Create your models here.
 
-class Message(models.Model):
-    text = models.TextField(null=True, blank=True)
-    image = models.ImageField(upload_to='chat/image/', null=True, blank=True)
-    file = models.FileField(upload_to='chat/file/', null=True, blank=True)
-    sender = models.ForeignKey('auth.User', null=True, on_delete=models.SET_NULL)
-    is_read = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
+# class Message(models.Model):
+#     text = models.TextField(null=True, blank=True)
+#     image = models.ImageField(upload_to='chat/image/', null=True, blank=True)
+#     file = models.FileField(upload_to='chat/file/', null=True, blank=True)
+#     sender = models.ForeignKey('auth.User', null=True, on_delete=models.SET_NULL)
+#     is_read = models.BooleanField(default=False)
+#     created_at = models.DateTimeField(auto_now_add=True)
     
-    def __str__(self):
-        return self.sender.username
+#     def __str__(self):
+#         return self.sender.username
     
     
 
@@ -23,13 +24,47 @@ class Chat(models.Model):
     admin = models.ForeignKey("auth.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="admins")
     customer = models.ForeignKey("auth.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="customers")
     chat_type = models.CharField(max_length=12, choices=ChatType.choices, default=ChatType.INDIVIDUAL)
-    message = models.ManyToManyField(Message, related_name='messages')
     members = models.ManyToManyField('auth.User', related_name='members', blank=True)
     group = models.CharField(max_length=255, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     
-    def __str__(self) -> str:
-        return self.chat_id
+#     def __str__(self) -> str:
+#         return self.chat_id
+    
+
+
+class Message(models.Model):
+    sender = models.IntegerField(null=True)
+    room = models.CharField(max_length=6, null=True)
+    body = models.TextField(null=True)
+    store = models.IntegerField(null=True)
+    group_display_name = models.CharField(max_length=255, blank=True, null=True)
+    group_name = models.CharField(max_length=255, blank=True, null=True)
+    event_type = models.CharField(max_length=255, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def save(self,*args, **kwargs):
+        if not self.room:
+            self.room = str(uuid.uuid4())[0:6]
+        
+        self.group_name = self.get_group_name()
+        return super().save()
+    
+    
+    def __str__(self):
+        return str(self.sender) + "--->" + self.room
+    
+    def get_group_name(self):
+        
+        if self.group_name:
+            group_ = "_".join(self.group_name.split(" "))
+            return f"{group_}_{self.room}"
+        
+        return f"group_{self.room}"
+            
+    
+    
+    
     
     

@@ -36,19 +36,21 @@
         }
 
 
-        const roomName = JSON.parse(document.getElementById('room-name').textContent);
+        {% comment %} const roomName = JSON.parse(document.getElementById('room-name').textContent); {% endcomment %}
+        const roomName = "mnA32h"
 
-        const chatSocket = new WebSocket('ws://127.0.0.1:8001/send/'+roomName+'/');
+        {% comment %} const chatSocket = new WebSocket('ws://127.0.0.1:8001/send/'+roomName+'/'); {% endcomment %}
+        const chatSocket = new WebSocket('ws://127.0.0.1:8001/send/');
         
         chatSocket.onopen = function(e){
             console.log("connected....", e)
         }
 
         chatSocket.onmessage = function(e) {
-            console.log("message...", e)
+            console.log("message...", e.data)
             const data = JSON.parse(e.data);
-            console.log(data)
-            document.querySelector('#chat-log').append(data.message + '\n');
+            console.log("message body", typeof(data.data))
+            document.querySelector('#chat-log').append(JSON.parse(data.data).body + '\n');
         };
 
         chatSocket.onclose = function(e) {
