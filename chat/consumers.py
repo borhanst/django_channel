@@ -1,4 +1,5 @@
 import json
+import uuid
 from channels.generic.websocket import AsyncWebsocketConsumer
 from chat.models import Chat, Message
 from channels.db import database_sync_to_async
@@ -10,35 +11,50 @@ def get_or_create_chat(chat_id: str):
 
 
 @database_sync_to_async
-def create_message(text, sender, room_id):
-    message = Message.objects.create(text=text, sender=sender)
-    chat = Chat.objects.get(chat_id=room_id)
-    chat.message.add(message)
+def create_message(data:dict):
+    Message.objects.create(**data)
+    
 
 
 class ChatAsyncWebsocketConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.user = self.scope.get("user")
         self.kwargs = self.scope["url_route"]["kwargs"]
-        self.room_id = self.kwargs.get("room_id")
-        self.group_name = f"chat_{self.room_id}"
+        self.room = self.kwargs.get("room")
+        if not self.room:
+            self.room = str(uuid.uuid4())[0:6]
+        self.group_name = f"chat_{self.room}"
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         print("connected......")
-        return await super().connect()
+        await self.accept()
+        
 
     async def receive(self, text_data=None, bytes_data=None):
         print("message received", text_data, bytes_data)
         data = json.loads(text_data)
-        await create_message(data.get("message"), self.user, self.room_id)
+        payload = {
+            'body': data.get("message"),
+            'sender': 1,
+            'store':2,
+            'room': self.room
+        }
+        await create_message(data=payload)
         await self.channel_layer.group_send(
-            self.group_name, {"type": "chat.message", "data": text_data}
+            self.group_name, {"type": "chat.message", "data": json.dumps({
+            'body': data.get("message"),
+            'room': self.room
+        })}
         )
-        return await super().receive(text_data, bytes_data)
+        
+        
 
     async def chat_message(self, event):
         print("send..", event)
-        await self.send(text_data=event["data"])
+        await self.send(text_data=json.dumps(event))
+        
+    
 
     async def disconnect(self, code):
+        await self.channel_layer.group_discard(self.group_name, self.channel_name)
         print("dis connect", code)
-        return await super().disconnect(code)
+        
