@@ -10,12 +10,10 @@
         <a href="{% url 'room' %}?id={{chat.id}}" >{{ chat.username }}</a><br>
     {% endfor %}
     
-    {% for chat in chats %}
-        {% if request.user ==  chat.customer%}
-            <a href="{% url 'room' chat.chat_id %}" >{{ chat.admin.username }}</a>
-        {% elif request.user == chat.admin%}
-            <a href="{% url 'room' chat.chat_id %}" >{{ chat.customer.username }}</a>
-        {% endif %}
+    {% for chat in message %}
+        
+        <a href="{% url 'room' chat.room %}" >{{ chat.group_name }}</a>
+        
     {% endfor %}
     <p> Group </p>
     {% for chat in group_chats %}

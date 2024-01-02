@@ -1,15 +1,12 @@
 from django.shortcuts import render, redirect
-from chat.models import Message
-from django.contrib.auth.models import User
-from django.db.models import Q
 from django.contrib.auth import authenticate, login
 
 # Create your views here.
 
 
 def home(request):
-    message = Message.objects.filter(room='mnA32h').filter(~Q(sender=request.user)).values('sender__username')[:1]
-    print(message)
+    # message = Message.objects.filter(room='mnA32h').filter(Q(sender=1) | Q(sender=2)).values("group_name", "room").distinct()
+    # print(message)
     return render(request, "home.html")
 
 
@@ -30,6 +27,7 @@ def room(request, room_id=None):
     #     chat.members.add(request.user)
     #     chat.group = group_name
     # print(chat)
+    # message = Message.objects.filter(room='mnA32h')
     return render(request, "room.html")
 
 
@@ -41,5 +39,7 @@ def login_view(request):
         if user is not None:
             login(request, user)
             return redirect('/')
+        else:
+            print('login error', user)
     
     return render(request, 'login.html')

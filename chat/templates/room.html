@@ -12,9 +12,9 @@
 </head>
 <body>
     <div id="message-list">
-        {% for message in chat.message.all %}
-        <div class="{% if request.user == message.sender %}right-side{%endif%}">
-        <strong style="margin-right:10px">{{message.sender}}</strong>{{message.text}}<span style="color:gray; font-size:0.8rem; margin-left:10px">{{message.created_at|naturaltime}}</span><br>
+        {% for message in messages %}
+        <div class="{% if 1 == message.sender %}right-side{%endif%}">
+        <strong style="margin-right:10px">{{message.sender}}</strong>{{message.body}}<span style="color:gray; font-size:0.8rem; margin-left:10px">{{message.created_at|naturaltime}}</span><br>
         </div>
     {% endfor %}
     </div>
@@ -37,10 +37,10 @@
 
 
         {% comment %} const roomName = JSON.parse(document.getElementById('room-name').textContent); {% endcomment %}
-        const roomName = "mnA32h"
+        const roomName = "d6017c4b-5c1f-4608-b9d4-485779df7538"
 
-        {% comment %} const chatSocket = new WebSocket('ws://127.0.0.1:8001/send/'+roomName+'/'); {% endcomment %}
-        const chatSocket = new WebSocket('ws://127.0.0.1:8001/send/');
+        const chatSocket = new WebSocket('ws://127.0.0.1:8000/send/'+roomName+'/');
+        {% comment %} const chatSocket = new WebSocket('ws://127.0.0.1:8000/send/?key=ewruwiern34373895wierjkfds'); {% endcomment %}
         
         chatSocket.onopen = function(e){
             console.log("connected....", e)
@@ -49,8 +49,8 @@
         chatSocket.onmessage = function(e) {
             console.log("message...", e.data)
             const data = JSON.parse(e.data);
-            console.log("message body", typeof(data.data))
-            document.querySelector('#chat-log').append(JSON.parse(data.data).body + '\n');
+            console.log("message body", data.data.body)
+            document.querySelector('#chat-log').append(data.data.body + '\n');
         };
 
         chatSocket.onclose = function(e) {
@@ -58,6 +58,10 @@
             console.log('Chat socket closed unexpectedly', e);
             
         };
+
+        chatSocket.onerror = function(e){
+            console.log("some error", e)
+        }
 
         document.querySelector('#chat-message-input').focus();
         document.querySelector('#chat-message-input').onkeyup = function(e) {
@@ -70,8 +74,9 @@
             const messageInputDom = document.querySelector('#chat-message-input');
             const message = messageInputDom.value;
             chatSocket.send(JSON.stringify({
-                'message': message,
-                'chat_id': roomName
+                'body': message,
+                'event_type': 'chat.message',
+                'member': 1
             }));
             messageInputDom.value = '';
         };
