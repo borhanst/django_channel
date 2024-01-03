@@ -11,9 +11,10 @@
     </style>
 </head>
 <body>
+    <a href="{% url 'home' pk %}">chat list</a>
     <div id="message-list">
         {% for message in messages %}
-        <div class="{% if 1 == message.sender %}right-side{%endif%}">
+        <div class="{% if pk == message.sender %}right-side{%endif%}">
         <strong style="margin-right:10px">{{message.sender}}</strong>{{message.body}}<span style="color:gray; font-size:0.8rem; margin-left:10px">{{message.created_at|naturaltime}}</span><br>
         </div>
     {% endfor %}
@@ -21,7 +22,9 @@
     <textarea id="chat-log" cols="100" rows="20"></textarea><br>
     <input id="chat-message-input" type="text" size="100"><br>
     <input id="chat-message-submit" type="button" value="Send">
+    <button id="connect">start connect</button>
     {{ room_name|json_script:"room-name" }}
+    {{ pk|json_script:"pk" }}
     <script>
         const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
@@ -35,22 +38,52 @@
             return result;
         }
 
-
-        {% comment %} const roomName = JSON.parse(document.getElementById('room-name').textContent); {% endcomment %}
-        const roomName = "d6017c4b-5c1f-4608-b9d4-485779df7538"
-
-        const chatSocket = new WebSocket('ws://127.0.0.1:8000/send/'+roomName+'/');
-        {% comment %} const chatSocket = new WebSocket('ws://127.0.0.1:8000/send/?key=ewruwiern34373895wierjkfds'); {% endcomment %}
+        const type_obj = {
+            1: 'send.message',
+            2: 'create.room',
+            3: 'create.group',
+            4: 'add.member'
+        }
         
+
+        const roomName = JSON.parse(document.getElementById('room-name').textContent);
+        const pk = JSON.parse(document.getElementById('pk').textContent);
+        let chatSocket = new WebSocket('ws://127.0.0.1:8000/send/'+roomName+'/');
+        {% comment %} const chatSocket = new WebSocket('ws://127.0.0.1:8000/send/?key=ewruwiern34373895wierjkfds'); {% endcomment %}
+        let messageCreate = function(data){
+            console.log("create message", data.data.body)
+            let message;
+            if(pk == data.data.sender){
+                message = `<div class="right-side">
+                    <strong style="margin-right:10px">${data.data.sender}</strong>${data.data.body}<span style="color:gray; font-size:0.8rem; margin-left:10px">{{message.created_at|naturaltime}}</span><br>
+                </div>`
+            }
+            else{
+                message = `<div class="">
+                    <strong style="margin-right:10px">${data.data.sender}</strong>${data.data.body}<span style="color:gray; font-size:0.8rem; margin-left:10px">{{message.created_at|naturaltime}}</span><br>
+                </div>`
+            }
+            console.log('create element', message)
+            
+            document.getElementById('message-list').append(`${message}`)
+        }
         chatSocket.onopen = function(e){
             console.log("connected....", e)
+        }
+        document.getElementById('connect').onclick = function(){
+            console.log('click')
+            chatSocket = new WebSocket('ws://127.0.0.1:8000/send/'+roomName+'/');
         }
 
         chatSocket.onmessage = function(e) {
             console.log("message...", e.data)
             const data = JSON.parse(e.data);
-            console.log("message body", data.data.body)
             document.querySelector('#chat-log').append(data.data.body + '\n');
+            const path = window.location.pathname.split('/')
+            if(path.length<=4){
+                window.location.href = 'http://127.0.0.1:8000/room/'+ data.data.room.room_id +'/'+pk +'/'
+            }
+            
         };
 
         chatSocket.onclose = function(e) {
@@ -76,7 +109,7 @@
             chatSocket.send(JSON.stringify({
                 'body': message,
                 'event_type': 'chat.message',
-                'member': 1
+                'member': pk
             }));
             messageInputDom.value = '';
         };

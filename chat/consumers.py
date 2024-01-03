@@ -38,8 +38,7 @@ class ChatAsyncWebsocketConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data=None, bytes_data=None):
         print("message received", text_data, bytes_data)
         data = json.loads(text_data)
-        print(data)
-        payload = {"body": data.get('body'), "event_type": data.get('event_type'), "sender": 1, "room": self.room_obj}
+        payload = {"body": data.get('body'), "event_type": data.get('event_type'), "sender": data.get('member'), "room": self.room_obj}
 
         message = await create_message(data=payload)
         message_serializer = MessageSerializer(message)

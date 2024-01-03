@@ -54,6 +54,7 @@ class Room(models.Model):
     group_name = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_group = models.BooleanField(default=True)
 
     def __str__(self):
         return str(self.room_id)
@@ -79,6 +80,7 @@ class Message(models.Model):
     body = models.TextField(null=True)
 
     event_type = models.CharField(max_length=255, blank=True, null=True)
+    is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

@@ -3,6 +3,18 @@
 <head>
     <meta charset="utf-8"/>
     <title>chat list</title>
+    <style>
+        .container{
+            display:flex;
+            gap:16px
+        }
+        .chat-list{
+            width:30%;
+        }
+        .message{
+            width:70%;
+        }
+    </style>
 </head>
 <body>
 
@@ -15,13 +27,49 @@
         <a href="{% url 'room' chat.room %}" >{{ chat.group_name }}</a>
         
     {% endfor %}
-    <p> Group </p>
+    
     {% for chat in group_chats %}
         <a href="{% url 'room' chat.chat_id %}" >{{ chat.chat_id }}</a>
     {% endfor %}
+    <div class="container">
+        <div class="chat-list">
+            {% if rooms|length > 0 %}
+                <p> Employee with chat </p>
+                {% for r in rooms %}
+                    {% if r.message__sender != pk %}
+                        <a href="{% url 'chat_room' r.room_id pk %}">{{r.message__sender}}</a><br>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+            <p> Employee without chat </p>
+            {% if room_list %}
+                {% if 1 not in room_list %}
+                    <a href="{% url 'chat_room' pk %}">1</a><br>
+                {% elif 2 not in room_list%}
+                    <a href="{% url 'chat_room' pk %}">2</a><br>
+                {% endif %}
+            {% else %}
+                {% if pk == 1 %}
+                    <a href="{% url 'chat_room' pk %}">2</a><br>
+                {% elif 2 == pk %}
+                    <a href="{% url 'chat_room' pk %}">1</a><br>
+                {% endif %}
+            {% endif %}
+            {% if groups %}
+                <p> Group </p>
+                {% for group in groups %}
+                    <a href="{% url 'chat_room' group.room_id pk %}">{{group.group_display_name}}</a><br>
+                {% endfor %}
+            {% endif %}
+            <br><a href="{% url 'group_create' pk %}?name=storewoner">create group</a>
+        </div>
+        <div class="message"></div>
+
+    </div>
+    {{ pk|json_script:"pk" }}
     <script>
         const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
+        const pk = JSON.parse(document.getElementById('pk').textContent);
         function generateString(length) {
             let result = ' ';
             const charactersLength = characters.length;
