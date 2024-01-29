@@ -15,14 +15,26 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-from chat.views import room, home, login_view, group_create
+from django.urls import path, include
+from chat.views import room, home, login_view, group_create, PrintView, RoomViewSet
+from rest_framework.routers import DefaultRouter
+from django.conf.urls.static import static
+from django.conf import settings
+
+router = DefaultRouter()
+router.register("room", RoomViewSet, basename="room")
+
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('room/<uuid:room_id>/<int:pk>/', room, name='chat_room'),
-    path('room/<int:pk>/', room, name='chat_room'),
-    path('group/<int:pk>/', group_create, name='group_create'),
-    path('<int:pk>/', home, name='home'),
-    path('login', login_view)
-]
+    path("admin/", admin.site.urls),
+    path("room/<uuid:room_id>/<int:pk>/", room, name="chat_room"),
+    path("room/<int:pk>/", room, name="chat_room"),
+    path("group/<int:pk>/", group_create, name="group_create"),
+    path("<int:pk>/", home, name="home"),
+    path("login", login_view),
+    path("print", PrintView.as_view(), name="print"),
+    path("api/", include(router.urls)),
+    path("api-auth/", include("rest_framework.urls")),
+]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+

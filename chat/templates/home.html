@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -17,7 +18,7 @@
     </style>
 </head>
 <body>
-
+    <img src="{% static "borhan.jpg" %}" alt="img"/>
     {% for chat in users %}
         <a href="{% url 'room' %}?id={{chat.id}}" >{{ chat.username }}</a><br>
     {% endfor %}
@@ -32,6 +33,7 @@
         <a href="{% url 'room' chat.chat_id %}" >{{ chat.chat_id }}</a>
     {% endfor %}
     <div class="container">
+        <a href="{% url 'print' %}">download pdf</a>
         <div class="chat-list">
             {% if rooms|length > 0 %}
                 <p> Employee with chat </p>

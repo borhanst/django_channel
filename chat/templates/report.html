@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver List</title>
+    
+    
+    
+    
+    
+    
+</head>
+<body>
+    
+    
+    <h1 class="headding">Driver List</h1>
+    
+    <table class="generated-table">
+        <thead>
+          <tr>
+            <th>SL</th>
+            <th>Driver</th>
+            <th>Hourly Rate</th>
+            <th>Rating</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for item in obj %}
+          <tr>
+            <td>{{forloop.counter}}</td>
+            <td>
+              
+              {{ item.room_id }}
+            </td>
+            <td>{{item.group_display_name|default_if_none:0}}</td>
+            <td>{{item.is_group|default_if_none:0}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+</body>
+</html>
